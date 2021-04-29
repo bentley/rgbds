@@ -11,8 +11,6 @@
 
 #include <stdbool.h>
 
-#define MAXSTRLEN	255
-
 struct LexerState;
 extern struct LexerState *lexerState;
 extern struct LexerState *lexerStateEOL;

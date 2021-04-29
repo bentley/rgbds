@@ -52,6 +52,7 @@ struct FileStackNamedNode { /* NODE_FILE, NODE_MACRO */
 extern size_t maxRecursionDepth;
 
 struct MacroArgs;
+struct String;
 
 void fstk_Dump(struct FileStackNode const *node, uint32_t lineNo);
 void fstk_DumpCurrent(void);
@@ -71,10 +72,10 @@ bool fstk_FindFile(char const *path, char **fullPath, size_t *size);
 
 bool yywrap(void);
 void fstk_RunInclude(char const *path);
-void fstk_RunMacro(char const *macroName, struct MacroArgs *args);
+void fstk_RunMacro(struct String const *macroName, struct MacroArgs *args);
 void fstk_RunRept(uint32_t count, int32_t reptLineNo, char *body, size_t size);
-void fstk_RunFor(char const *symName, int32_t start, int32_t stop, int32_t step,
-		     int32_t reptLineNo, char *body, size_t size);
+void fstk_RunFor(struct String *symName, int32_t start, int32_t stop, int32_t step,
+		 int32_t reptLineNo, char *body, size_t size);
 void fstk_StopRept(void);
 bool fstk_Break(void);
 
