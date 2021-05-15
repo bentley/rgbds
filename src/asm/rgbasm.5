@@ -875,43 +875,45 @@ and at signs
 However, they must begin with either a letter or an underscore.
 Periods
 .Sq \&.
-are allowed exclusively in labels, as described below.
+are allowed exclusively in label names, as described below.
 A symbol cannot have the same name as a reserved keyword.
-.Ss Label declaration
+.Ss Label definition
 One of the assembler's main tasks is to keep track of addresses for you, so you can work with meaningful names instead of "magic" numbers.
+Labels enable just that.
+A label definition is made of a label name at the beginning of a line,
+.Sy immediately
+followed by one or two colons.
 .Pp
-This can be done in a number of ways:
+Any label whose name does not contain a period is a global label.
+Defining a global label sets it as the current label scope, until the next global one.
+.Pp
+Any label whose name contains a period is a local label; more than one period, however, is not allowed.
+Local labels can be declared as
+.Ql scope.local
+or simply as
+.Ql .local .
+If the former notation is used, then
+.Ql scope
+must actually be the current label scope (as explained in the previous paragraph).
+With the latter syntax, the current label scope is implicitly prepended.
+For convenience, the colons can be omitted when defining a local label.
+.Pp
+Here are some examples of label definitions:
 .Bd -literal -offset indent
 GlobalLabel:
 AnotherGlobal:
-\&.locallabel
+\&.locallabel ;\ This defines "AnotherGlobal.locallabel"
 \&.another_local:
 AnotherGlobal.with_another_local:
 ThisWillBeExported:: ;\ Note the two colons
 ThisWillBeExported.too::
 .Ed
 .Pp
-Any label whose name does not contain a period is a global label.
-Declaring a global label sets it as the current scoped label, until the next global one.
-Global labels must be followed by one or two colons.
-.Pp
-Any label whose name contains a single period is a local label.
-Label names cannot contain more than one period.
-If the period is the first character, it will have the current scoped label's name implicitly prepended.
-Local labels may optionally be followed by one or two colons.
-Local labels can be declared as
-.Ql scoped.local
-or simply as
-.Ql .local .
-If the former notation is used, then
-.Ql scoped
-must actually be the current scoped label.
-.Pp
 Declaring a label (global or local) with two colons
 .Ql ::
-will
+will define and
 .Ic EXPORT
-and define it at the same time.
+it at the same time.
 (See
 .Sx Exporting and importing symbols
 below).
