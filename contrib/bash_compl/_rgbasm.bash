@@ -1,7 +1,6 @@
+#/usr/bin/env bash
 
 # known bugs - no support for newlines in filenames
-
-
 # reference: https://iridakos.com/programming/2018/03/01/bash-programmable-completion-tutorial
 
 _rgbasm_completions() {
