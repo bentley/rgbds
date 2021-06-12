@@ -43,7 +43,7 @@ _rgbasm_completions() {
     then
 	COMPREPLY=( $( compgen -A file $current_word ) )
     elif [ "$last_word" == "-W" ]
-	 # autocomplete to a warnig
+	 # autocomplete to a warning
     then 
 	warnings=( "error" "all" "extra" "everything" "assert" "backwards-for" "builtin-args" "charmap-redef" )
 	warnings+=( "div" "empty-macro-arg" "empty-strrpl" "large-constant" "long-string" "macro-shift" )
