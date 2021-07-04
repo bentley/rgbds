@@ -17,6 +17,7 @@
 #include "asm/fstack.h"
 #include "asm/macro.h"
 #include "asm/main.h"
+#include "asm/string.h"
 #include "asm/symbol.h"
 #include "asm/warning.h"
 #include "platform.h" /* S_ISDIR (stat macro) */
@@ -38,7 +39,7 @@ struct Context {
 	uint32_t nbReptIters;
 	int32_t forValue;
 	int32_t forStep;
-	char *forName;
+	struct String *forName;
 };
 
 static struct Context *contextStack;
@@ -354,18 +355,18 @@ void fstk_RunInclude(char const *path)
 	macro_SetUniqueID(0);
 }
 
-void fstk_RunMacro(char const *macroName, struct MacroArgs *args)
+void fstk_RunMacro(struct String const *macroName, struct MacroArgs *args)
 {
-	dbgPrint("Running macro \"%s\"\n", macroName);
+	dbgPrint("Running macro \"%" PRI_STR "\"\n", STR_FMT(macroName));
 
 	struct Symbol *macro = sym_FindExactSymbol(macroName);
 
 	if (!macro) {
-		error("Macro \"%s\" not defined\n", macroName);
+		error("Macro \"%" PRI_STR "\" not defined\n", STR_FMT(macroName));
 		return;
 	}
 	if (macro->type != SYM_MACRO) {
-		error("\"%s\" is not a macro\n", macroName);
+		error("\"%" PRI_STR "\" is not a macro\n", STR_FMT(macroName));
 		return;
 	}
 	contextStack->macroArgs = macro_GetCurrentArgs();
@@ -386,12 +387,13 @@ void fstk_RunMacro(char const *macroName, struct MacroArgs *args)
 	}
 	struct FileStackNamedNode const *baseNode = (struct FileStackNamedNode const *)node;
 	size_t baseLen = strlen(baseNode->name);
-	size_t macroNameLen = strlen(macro->name);
+	size_t macroNameLen = str_Len(macro->name);
 	struct FileStackNamedNode *fileInfo = malloc(sizeof(*fileInfo) + baseLen
 						     + reptNameLen + 2 + macroNameLen + 1);
 
 	if (!fileInfo) {
-		error("Failed to alloc file info for \"%s\": %s\n", macro->name, strerror(errno));
+		error("Failed to alloc file info for \"%" PRI_STR "\": %s\n", STR_FMT(macro->name),
+		      strerror(errno));
 		return;
 	}
 	fileInfo->node.type = NODE_MACRO;
@@ -414,7 +416,7 @@ void fstk_RunMacro(char const *macroName, struct MacroArgs *args)
 	}
 	*dest++ = ':';
 	*dest++ = ':';
-	memcpy(dest, macro->name, macroNameLen + 1);
+	memcpy(dest, str_Chars(macro->name), macroNameLen + 1);
 
 	newContext((struct FileStackNode *)fileInfo);
 	contextStack->lexerState = lexer_OpenFileView("MACRO", macro->macro, macro->macroSize,
@@ -472,11 +474,14 @@ void fstk_RunRept(uint32_t count, int32_t reptLineNo, char *body, size_t size)
 	contextStack->forName = NULL;
 }
 
-void fstk_RunFor(char const *symName, int32_t start, int32_t stop, int32_t step,
-		     int32_t reptLineNo, char *body, size_t size)
+void fstk_RunFor(struct String *symName, int32_t start, int32_t stop, int32_t step,
+		 int32_t reptLineNo, char *body, size_t size)
 {
-	dbgPrint("Running FOR(\"%s\", %" PRId32 ", %" PRId32 ", %" PRId32 ")\n",
-		 symName, start, stop, step);
+	dbgPrint("Running FOR(\"%" PRI_STR "\", %" PRId32 ", %" PRId32 ", %" PRId32 ")\n",
+		 STR_FMT(symName), start, stop, step);
+
+	assert(0 || "Check ownership of FOR sym name on exit, and also here when erroring out");
+	str_Ref(symName);
 
 	struct Symbol *sym = sym_AddSet(symName, start);
 
@@ -504,9 +509,7 @@ void fstk_RunFor(char const *symName, int32_t start, int32_t stop, int32_t step,
 	contextStack->nbReptIters = count;
 	contextStack->forValue = start;
 	contextStack->forStep = step;
-	contextStack->forName = strdup(symName);
-	if (!contextStack->forName)
-		fatalerror("Not enough memory for FOR symbol name: %s\n", strerror(errno));
+	contextStack->forName = symName;
 }
 
 void fstk_StopRept(void)
