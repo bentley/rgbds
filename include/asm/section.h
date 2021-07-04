@@ -49,6 +49,7 @@ void sect_NewSection(char const *name, uint32_t secttype, uint32_t org,
 void sect_SetLoadSection(char const *name, uint32_t secttype, uint32_t org,
 			 struct SectionSpec const *attributes, enum SectionModifier mod);
 void sect_EndLoadSection(void);
+void sect_PushInlineFragmentSection(void);
 
 struct Section *sect_GetSymbolSection(void);
 uint32_t sect_GetSymbolOffset(void);
